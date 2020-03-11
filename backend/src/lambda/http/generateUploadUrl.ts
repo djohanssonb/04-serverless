@@ -4,6 +4,7 @@ import * as AWS  from 'aws-sdk'
 import * as uuid from 'uuid'
 import * as AWSXRay from 'aws-xray-sdk'
 import { updateAttachment } from '../../businessLogic/todo'
+//import { stringify } from 'querystring'
 
 const XAWS = AWSXRay.captureAWS(AWS)
 
@@ -11,7 +12,6 @@ const s3 = new XAWS.S3({
   signatureVersion: 'v4'
 })
 
-//const todoTable = process.env.TODO_TABLE
 const bucketName = process.env.ATTACHMENTS_S3_BUCKET
 const urlExpiration = process.env.SIGNED_URL_EXPIRATION
 
@@ -19,18 +19,24 @@ export const handler: APIGatewayProxyHandler = async (event: APIGatewayProxyEven
   const todoId = event.pathParameters.todoId
   console.log(todoId)
   const imageId = uuid.v4()
+  
   const url = getUploadUrl(imageId)
-  const bUpdated = updateAttachment(url, todoId)
-  if(bUpdated)
+  const imagePath= "https://"+bucketName+".s3.eu-north-1.amazonaws.com/"+imageId;
+  console.log("Attachment upload URL: "+ imagePath)
+  const sUpdated = await updateAttachment(imagePath, todoId)
+  console.log("Attachment update return: " + sUpdated)
+  if(sUpdated.toString() == "updated")
   {
     return {
       statusCode: 200,
       headers: {
-          "Access-Control-Allow-Origin": "*",
+          "Access-Control-Allow-Origin": "*"
       },
-      body: JSON.stringify({
+      body: JSON.stringify(
+        {
           uploadUrl: url
-      })
+        }
+      )
     }
   }
   else
@@ -40,12 +46,11 @@ export const handler: APIGatewayProxyHandler = async (event: APIGatewayProxyEven
       headers: {
           "Access-Control-Allow-Origin": "*",
       },
-      body: JSON.stringify({
-          error: 'Unable to update attachment url!'
-      })
+      body: 
+      "Unable to update attachment"
+    }
   }
-  }
-
+ 
   function getUploadUrl(imageId: string) {
     return s3.getSignedUrl('putObject', {
       Bucket: bucketName,
@@ -53,4 +58,5 @@ export const handler: APIGatewayProxyHandler = async (event: APIGatewayProxyEven
       Expires: urlExpiration
     })
   }
+  
 }

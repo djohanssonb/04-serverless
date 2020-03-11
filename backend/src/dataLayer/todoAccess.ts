@@ -10,27 +10,30 @@ export class TodoAccess {
     private readonly todoTable = process.env.TODO_TABLE) {
   }
   async getAllTodo(userId: String): Promise<TodoItem[]> {
-    console.log('Getting all Todo items')
-    const result = await this.docClient.query({
-      TableName: this.todoTable,
-      KeyConditionExpression: 'userId = :userId',
-      ExpressionAttributeValues: {
-        ':userId': userId
-      },
-      ScanIndexForward: false
-    }).promise()
-
-    const items = result.Items
-    return items as TodoItem[]
+          console.log('Getting all Todo items')
+          var params = {
+            TableName: this.todoTable,
+         //   ProjectionExpression: "#u",
+            FilterExpression: "#u = :userId",
+            ExpressionAttributeNames: {
+                "#u": "userId",
+            },
+            ExpressionAttributeValues: {
+                 ":userId": userId
+            }
+        };
+        
+        console.log("Scanning todo table");
+        const result = await this.docClient.scan(params).promise();
+    
+        return result.Items as TodoItem[]
   }
-
-  async getTodo(todoId: String, userId: String): Promise<TodoItem> {
+  async getTodo(todoId: String): Promise<TodoItem> {
     const params = {
       TableName: this.todoTable,
-      KeyConditionExpression: 'userId = :userId AND todoId = :todoId',
+      KeyConditionExpression: 'todoId = :todoId',
       ExpressionAttributeValues: {
-          ':todoId': todoId,
-          ':userId': userId,
+          ':todoId': todoId
       },
       ScanIndexForward: false
     };
@@ -47,11 +50,10 @@ export class TodoAccess {
     return todo
   }
 
-  async updateTodoRequest(todoId: String, userId: String, name: String, dueDate: String, done: Boolean): Promise<TodoItem> {
+  async updateTodoRequest(todoId: String, name: String, dueDate: String, done: Boolean): Promise<TodoItem> {
     var params = {
       TableName: this.todoTable,
       Key:{
-          "userId": userId,
           "todoId": todoId
       },
       UpdateExpression: "set #a = :a, #b = :b, #c = :c",
@@ -69,62 +71,42 @@ export class TodoAccess {
     };
     console.log("Updating the item...");
     const result = await this.docClient.update(params).promise();
-    console.log(result);
+    console.log("Item updated: "+JSON.stringify(result.Attributes));
     const updatedAttr = result.Attributes;
     return updatedAttr as TodoItem;
   }
   
-  async updateAttachment(todoId: string, attachmentUrl: string): Promise<Boolean>
+  async updateAttachment(todoId: string, imagePath: string): Promise<string>
   {
-    console.log("Updating item with attachment url: " + attachmentUrl)
-    var params = {
+    console.log("Updating item with attachment url: " + imagePath)
+    const result = await this.docClient.update({
       TableName: this.todoTable,
       Key:{
-          "todoId": todoId
-      },
-      UpdateExpression: "set attachmentUrl=:att",
-      ExpressionAttributeValues:{
-          ":att": attachmentUrl
-      },
-      ReturnValues:"ALL_NEW"
-    };
-    console.log("update complete")
-    this.docClient.update(params, function(err, data) {
-      if (err) {
-        console.log("update error")
-          return false
-      } else if (data){
-        console.log("update complete")
-          return true
-      }
-    })
-    return false
+        "todoId": todoId
+        },
+        UpdateExpression: "set attachmentUrl = :value",
+        ExpressionAttributeValues:{
+          ":value": imagePath
+        },
+        ReturnValues:"ALL_NEW"
+      }).promise();
+
+      console.log("Item updated: " + JSON.stringify(result.Attributes))
+     
+      return "updated" as string
   }
 
-  async deleteTodo(todoId: String): Promise<Boolean> {
-    var removed=false
-    var params = {
-        TableName: this.todoTable,
-        Key:{
-          "todoId": todoId
-        }
-    };
-    console.log("Trying to delete todo item" + todoId);
-    try
-    {
-      this.docClient.delete(params, function(err, data) {
-        if (err) {
-            console.log("Unable to delete item. Error JSON:"+err.stack);
-        } else {
-            console.log("DeleteItem succeeded:" + JSON.stringify(data));
-            removed = true
-        }
-      });
-    }
-    catch(e)
-    {
-      console.log("Unable to delete due to exception: "+e.getMessage())
-    }
-    return removed
+  async deleteTodo(todoId: string): Promise<Boolean> {
+      await this.docClient.delete({
+      TableName: this.todoTable,
+      Key:{
+        "todoId": todoId
+      },
+        ConditionExpression:"todoId= :val",
+        ExpressionAttributeValues: {
+          ":val": todoId
+      }
+    }).promise()
+    return true
   }
 }

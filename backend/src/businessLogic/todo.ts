@@ -30,42 +30,35 @@ export async function createTodo(
     name: createTodoRequest.name,
     dueDate: createTodoRequest.dueDate,
     done: false,
-    attachmentUrl: null
+    attachmentUrl: "none"
   })
 }
 
 export async function getTodo(
-  todoId: string,
-  jwtToken: string
+  todoId: string
 ): Promise<TodoItem> {
-  const userId = getUserId(jwtToken)
-  return todoAccess.getTodo(todoId,userId)
+  return todoAccess.getTodo(todoId)
 }
 
 export async function deleteTodo(
   todoId: string
 ): Promise<Boolean> {
-  //const userId = getUserId(jwtToken)
   return todoAccess.deleteTodo(todoId)
 }
 
 export async function updateTodo(
     todoUpdateRequest: UpdateTodoRequest,
-    todoId: string,
-    jwtToken: string
+    todoId: string
 ): Promise<TodoItem> {
-    const userId = getUserId(jwtToken)
     return todoAccess.updateTodoRequest(todoId, 
-      userId,
       todoUpdateRequest.name, 
       todoUpdateRequest.dueDate,
       Boolean(todoUpdateRequest.done))
 }
 
 export async function updateAttachment(
-  attachmentUrl: string,
-  todoId: string
-):Promise<Boolean> {
-  return todoAccess.updateAttachment(todoId, 
-    attachmentUrl)
+  imagePath: string, todoId: string
+):Promise<string> {
+  console.log("Updating attachment TodoID: "+todoId +" URL: "+imagePath)
+  return todoAccess.updateAttachment(todoId, imagePath)
 }

@@ -35,6 +35,7 @@ provider:
         - dynamodb:Scan
         - dynamodb:PutItem
         - dynamodb:Query
+        - dynamodb:Delete
       Resource: arn:aws:dynamodb:${self:provider.region}:*:table/${self:provider.environment.TODO_TABLE}
     - Effect: Allow
       Action:
@@ -77,7 +78,7 @@ functions:
     iamRoleStatements:
       - Effect: Allow
         Action:
-          - dynamodb:*
+          - dynamodb:Scan
         Resource: arn:aws:dynamodb:${self:provider.region}:*:table/${self:provider.environment.TODO_TABLE}
 
   # TODO: Configure this function - DONE
@@ -99,10 +100,10 @@ functions:
     iamRoleStatements:
       - Effect: Allow
         Action:
-          - dynamodb:*
+          - dynamodb:PutItem
         Resource: arn:aws:dynamodb:${self:provider.region}:*:table/${self:provider.environment.TODO_TABLE}
 
-  # TODO: Configure this function
+  # TODO: Configure this function - DONE
   UpdateTodo:
     handler: src/lambda/http/updateTodo.handler
     events:
@@ -121,10 +122,10 @@ functions:
     iamRoleStatements:
       - Effect: Allow
         Action:
-          - dynamodb:*
+          - dynamodb:Update
         Resource: arn:aws:dynamodb:${self:provider.region}:*:table/${self:provider.environment.TODO_TABLE}
 
-  # TODO: Configure this function
+  # TODO: Configure this function - DONE
   DeleteTodo:
     handler: src/lambda/http/deleteTodo.handler
     events:
@@ -140,9 +141,9 @@ functions:
     iamRoleStatements:
       - Effect: Allow
         Action:
-          - dynamodb:*
+          - dynamodb:Delete
         Resource: arn:aws:dynamodb:${self:provider.region}:*:table/${self:provider.environment.TODO_TABLE}
-
+  # TODO: Configure this function - DONE
   GetTodo:
     handler: src/lambda/http/getTodo.handler
     events:
@@ -158,10 +159,10 @@ functions:
     iamRoleStatements:
       - Effect: Allow
         Action:
-          - dynamodb:*
+          - dynamodb:Query
         Resource: arn:aws:dynamodb:${self:provider.region}:*:table/${self:provider.environment.TODO_TABLE}
 
-  # TODO: Configure this function
+  # TODO: Configure this function - DONE
   GenerateUploadUrl:
     handler: src/lambda/http/generateUploadUrl.handler
     events:
@@ -178,14 +179,14 @@ functions:
       - Effect: Allow
         Action:
           - s3:*
-          - dynamodb:*
+          - dynamodb:Update
         Resource: 
           - arn:aws:s3:::${self:provider.environment.ATTACHMENTS_S3_BUCKET}/* 
           - arn:aws:dynamodb:${self:provider.region}:*:table/${self:provider.environment.TODO_TABLE}
 
 resources:
   Resources:
-    # TODO: Add any necessary AWS resources
+    # TODO: Add any necessary AWS resources - DONE
     GatewayResponseDefault4XX:
       Type: AWS::ApiGateway::GatewayResponse
       Properties:
@@ -201,15 +202,11 @@ resources:
       Type: AWS::DynamoDB::Table
       Properties:
         AttributeDefinitions:
-          - AttributeName: userId
-            AttributeType: S
           - AttributeName: todoId
             AttributeType: S
         KeySchema:
-          - AttributeName: userId
-            KeyType: HASH
           - AttributeName: todoId
-            KeyType: RANGE
+            KeyType: HASH
         BillingMode: PAY_PER_REQUEST
         TableName: ${self:provider.environment.TODO_TABLE}
 
