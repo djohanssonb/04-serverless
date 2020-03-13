@@ -6,13 +6,10 @@ import { getAllTodo } from '../../businessLogic/todo'
 //const XAWS = AWSXRay.captureAWS(AWS)
 
 export const handler: APIGatewayProxyHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
-  // TODO: Get all TODO items for a current user
-  console.log('Caller event', event)
-  
+
   const authorization = event.headers.Authorization;
   const split = authorization.split(' ');
   const jwtToken = split[1];
-
   const todoItems = await getAllTodo(jwtToken);
 
   return {
@@ -23,6 +20,6 @@ export const handler: APIGatewayProxyHandler = async (event: APIGatewayProxyEven
       },
       body: JSON.stringify({
           "items": todoItems,
-      }),
+      })
   }
 }

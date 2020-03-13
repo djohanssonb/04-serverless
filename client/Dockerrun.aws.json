@@ -1,0 +1,12 @@
+{
+    "AWSEBDockerrunVersion": "1",
+    "Image": {
+      "Name": "57192472048/dj_todo_app"
+    },
+    "Ports": [
+      {
+        "HostPort" : "8081",
+        "ContainerPort": "3000"
+      }
+    ]
+  }

@@ -1,7 +1,8 @@
 
 import { CustomAuthorizerEvent, CustomAuthorizerResult } from 'aws-lambda'
 import 'source-map-support/register'
-
+import { createLogger } from '../../utils/logger'
+const logger = createLogger('auth')
 import { verify } from 'jsonwebtoken'
 import { JwtToken } from '../../auth/JwtToken'
 
@@ -30,11 +31,10 @@ nSNPbOn1NfcvC9K4P2x+FlG2sWlW
 -----END CERTIFICATE-----`
 
 export const handler = async (  event: CustomAuthorizerEvent): Promise<CustomAuthorizerResult> => {
-  console.log('Authorizing a user', event.authorizationToken)
+  logger.info('Authorizing a user', event.authorizationToken)
   try {
     const jwtToken = verifyToken(event.authorizationToken)
-    console.log('User authorized', jwtToken)
-
+    logger.info('User authorized', jwtToken)
     return {
       principalId: jwtToken.sub,
       policyDocument: {
@@ -49,8 +49,7 @@ export const handler = async (  event: CustomAuthorizerEvent): Promise<CustomAut
       }
     }
   } catch (e) {
-    console.log('User not authorized', { error: e.message })
-
+    logger.info('User not authorized', { error: e.message })
     return {
       principalId: 'user',
       policyDocument: {
@@ -73,9 +72,7 @@ function verifyToken(authHeader: string): JwtToken {
 
   if (!authHeader.toLowerCase().startsWith('bearer '))
     throw new Error('Invalid authentication header')
-
   const split = authHeader.split(' ')
   const token = split[1]
-
   return verify(token, cert, { algorithms: ['RS256'] }) as JwtToken
 }

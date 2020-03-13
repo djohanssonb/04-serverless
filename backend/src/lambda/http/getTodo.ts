@@ -7,7 +7,10 @@ import { getTodo } from '../../businessLogic/todo'
 
 export const handler: APIGatewayProxyHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
   const todoId = event.pathParameters.todoId
-  const newItem = await getTodo(todoId)
+  const authorization = event.headers.Authorization
+  const split = authorization.split(' ')
+  const jwtToken = split[1]
+  const newItem = await getTodo(todoId,jwtToken)
   return {
     statusCode: 200,
     headers: {

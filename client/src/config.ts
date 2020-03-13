@@ -5,5 +5,6 @@ export const authConfig = {
   // TODO: Create an Auth0 application and copy values from it into this map
   domain: 'money-mountain.eu.auth0.com',            // Auth0 domain
   clientId: '8Z0DfJuUzW4O3zK0aP9ATSJxoG8TMtK7',          // Auth0 client id
-  callbackUrl: 'http://localhost:3002/callback'
+  //callbackUrl: 'http://localhost:3002/callback'
+  callbackUrl: 'http://djohanssontodoapp.eba-pkpevrh5.eu-north-1.elasticbeanstalk.com/callback'
 }

@@ -17,14 +17,13 @@ const urlExpiration = process.env.SIGNED_URL_EXPIRATION
 
 export const handler: APIGatewayProxyHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
   const todoId = event.pathParameters.todoId
-  console.log(todoId)
   const imageId = uuid.v4()
-  
+  const authorization = event.headers.Authorization
+  const split = authorization.split(' ')
+  const jwtToken = split[1]
   const url = getUploadUrl(imageId)
   const imagePath= "https://"+bucketName+".s3.eu-north-1.amazonaws.com/"+imageId;
-  console.log("Attachment upload URL: "+ imagePath)
-  const sUpdated = await updateAttachment(imagePath, todoId)
-  console.log("Attachment update return: " + sUpdated)
+  const sUpdated = await updateAttachment(imagePath, todoId,jwtToken)
   if(sUpdated.toString() == "updated")
   {
     return {
@@ -52,6 +51,8 @@ export const handler: APIGatewayProxyHandler = async (event: APIGatewayProxyEven
   }
  
   function getUploadUrl(imageId: string) {
+    s3.deleteObject()
+    
     return s3.getSignedUrl('putObject', {
       Bucket: bucketName,
       Key: imageId,

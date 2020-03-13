@@ -1,15 +1,9 @@
 import * as uuid from 'uuid'
-//import * as AWS  from 'aws-sdk'
-//import * as AWSXRay from 'aws-xray-sdk'
 import { TodoItem } from '../models/TodoItem'
 import { TodoAccess } from '../dataLayer/todoAccess'
 import { CreateTodoRequest } from '../requests/CreateTodoRequest'
 import { getUserId } from '../auth/utils'
 import { UpdateTodoRequest } from '../requests/UpdateTodoRequest'
-
-//const XAWS = AWSXRay.captureAWS(AWS)
-//const docClient = new XAWS.DynamoDB.DocumentClient()
-
 const todoAccess = new TodoAccess()
 
 export async function getAllTodo(jwtToken: string): Promise<TodoItem[]> {
@@ -20,7 +14,6 @@ export async function createTodo(
   createTodoRequest: CreateTodoRequest,
   jwtToken: string
 ): Promise<TodoItem> {
-  console.log("Executing CreateTodo")
   const todoId = uuid.v4()
   const userId = getUserId(jwtToken)
   return await todoAccess.createTodoRequest({
@@ -35,30 +28,29 @@ export async function createTodo(
 }
 
 export async function getTodo(
-  todoId: string
+  todoId: string, jwtToken: string
 ): Promise<TodoItem> {
-  return todoAccess.getTodo(todoId)
+  return todoAccess.getTodo(todoId, getUserId(jwtToken))
 }
 
 export async function deleteTodo(
-  todoId: string
+  todoId: string, jwtToken: string
 ): Promise<Boolean> {
-  return todoAccess.deleteTodo(todoId)
+  return todoAccess.deleteTodo(todoId, getUserId(jwtToken))
 }
 
 export async function updateTodo(
     todoUpdateRequest: UpdateTodoRequest,
-    todoId: string
+    todoId: string, jwtToken: string
 ): Promise<TodoItem> {
     return todoAccess.updateTodoRequest(todoId, 
       todoUpdateRequest.name, 
       todoUpdateRequest.dueDate,
-      Boolean(todoUpdateRequest.done))
+      Boolean(todoUpdateRequest.done), getUserId(jwtToken))
 }
 
 export async function updateAttachment(
-  imagePath: string, todoId: string
+  imagePath: string, todoId: string, jwtToken: string
 ):Promise<string> {
-  console.log("Updating attachment TodoID: "+todoId +" URL: "+imagePath)
-  return todoAccess.updateAttachment(todoId, imagePath)
+  return todoAccess.updateAttachment(todoId, imagePath, getUserId(jwtToken))
 }
