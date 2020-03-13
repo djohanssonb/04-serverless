@@ -158,7 +158,7 @@ functions:
     iamRoleStatements:
       - Effect: Allow
         Action:
-          - dynamodb:Query
+          - dynamodb:QUery
         Resource: arn:aws:dynamodb:${self:provider.region}:*:table/${self:provider.environment.TODO_TABLE}
 
   # TODO: Configure this function - DONE

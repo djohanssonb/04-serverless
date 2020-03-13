@@ -11,15 +11,30 @@ export const handler: APIGatewayProxyHandler = async (event: APIGatewayProxyEven
   const split = authorization.split(' ')
   const jwtToken = split[1]
   const newItem = await getTodo(todoId,jwtToken)
-  return {
-    statusCode: 200,
-    headers: {
-      'Access-Control-Allow-Origin': '*',
-      'Access-Control-Allow-Credentials': true
-    },
-    body: JSON.stringify(
-      newItem
-    )
+
+  if(newItem)
+  {
+    return {
+      statusCode: 200,
+      headers: {
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Credentials': true
+      },
+      body: JSON.stringify(
+        newItem
+      )
+    }
+  }
+  else
+  {
+      return {
+        statusCode: 404,
+        headers: {
+          'Access-Control-Allow-Origin': '*',
+          'Access-Control-Allow-Credentials': true
+        },
+        body: ""
+    }
   }
 }
 
